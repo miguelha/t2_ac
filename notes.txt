@@ -1,0 +1,4 @@
+- order waiting list by sleep time (its easier to remove from the head!)
+- no more tasks in ready/running (all tasks in waiting) -> idle task
+- only actually execute each tick per 4 interrupts
+- ticks decrement from waiting list and running list
