@@ -2,3 +2,28 @@
 - no more tasks in ready/running (all tasks in waiting) -> idle task
 - only actually execute each tick per 4 interrupts
 - ticks decrement from waiting list and running list
+
+
+
+
+
+
+
+
+
+
+TO-DO: 
+- use .eqv for offsets
+- add spaces to PCB and adjust program (TICKS_TO_SWITCH, TASK_PRIORITY, TASK_ID, TICKS_TO_WAIT
+
+
+
+
+QUESTIONS:
+
+- should i have a priority field in the PCB? how do i know what ready queue a task in waiting should go to?
+
+- is the TICKS_TO_SWITCH PCB field the same as the sleep PCB field?
+
+
+

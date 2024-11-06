@@ -12,6 +12,43 @@ freestack: .word 0
 STRING_done: .asciiz "Multitask started\n"
 STRING_main: .asciiz "\nTask Zero"
 
+.eqv AT 0
+.eqv V0 4
+.eqv V1 8
+.eqv A0 12
+.eqv A1 16
+.eqv A2 20
+.eqv A3 24
+.eqv T0 28
+.eqv T1 32
+.eqv T2 36
+.eqv T3 40
+.eqv T4 44
+.eqv T5 48
+.eqv T6 52
+.eqv T7 56
+.eqv S0 60
+.eqv S1 64
+.eqv S2 68
+.eqv S3 72
+.eqv S4 76
+.eqv S5 80
+.eqv S6 84
+.eqv S7 88
+.eqv T8 92
+.eqv T9 96
+.eqv K0 100
+.eqv K1 104
+.eqv GP 108
+.eqv SP 112
+.eqv FP 116
+.eqv RA 120
+.eqv HI 124
+.eqv LO 128
+.eqv EPC 132
+.eqv PID 136
+.eqv NEXT 140
+
 	.text
 main:
 # prepare the structures
@@ -55,9 +92,9 @@ prep_multi:
 	sw $zero, lastready
 	
 	la $t2, pcbstack # store stack pointer, PID (0) and next PCB (0) in PCB (no EPC anymore!)
-	sw $t2, 112($t1)
-	sw $zero, 136($t1)
-	sw $zero, 140($t1)
+	sw $t2, SP($t1)
+	sw $zero, PID($t1)
+	sw $zero, NEXT($t1)
 	
 	addiu $t1, $t1, 144 # increment 1 position in PCB and stack
 	addiu $t2, $t2, 32
@@ -70,16 +107,16 @@ newtask:
 	lw $t1, freepcb # load freepcb and freestack addresses
 	lw $t2, freestack
 	
-	sw $t2, 112($t1) # set new task PCB stack pointer, EPC, PID and next PCB
-	sw $a0, 132($t1) 
-	sw $a1, 136($t1)
-	sw $zero, 140($t1)
+	sw $t2, SP($t1) # set new task PCB stack pointer, EPC, PID and next PCB
+	sw $a0, EPC($t1) 
+	sw $a1, PID($t1)
+	sw $zero, NEXT($t1)
 	
 	lw $t3, ready # load ready list and check if its the first task
 	beqz $t3, firsttask
 	
 	lw $t4, lastready # not the first task, process accordingly
-	sw $t1, 140($t4)
+	sw $t1, NEXT($t4)
 	sw $t1, lastready
 	b newtaskend
 	
