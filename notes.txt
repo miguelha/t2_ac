@@ -14,7 +14,7 @@
 
 TO-DO: 
 - use .eqv for offsets
-- add spaces to PCB and adjust program (TICKS_TO_SWITCH, TASK_PRIORITY, TASK_ID, TICKS_TO_WAIT
+- add spaces to PCB and adjust program (TICKS_TO_SWITCH, TASK_PRIORITY, TASK_ID (ALREADY HAVE IT! IT IS THE PID FIELD), TICKS_TO_WAIT
 
 
 
