@@ -1,28 +1,6 @@
 # you must put here the necessary code to deal with the interrupts
-
-# enable interrupts
-.data
-ALL_INT_MASK: .word 0x0000ff00
-KBD_INT_MASK: .word 0x00000100
-RCR:	.word 	0xffff0000
-RDR:	.word	0xffff0004
-
-
-.text
-int_enable:
-	mfc0 $t0, $12
-	lw $t1, ALL_INT_MASK
-	not $t1, $t1
-	and $t0, $t0, $t1
-	lw $t1, KBD_INT_MASK
-	or $t0, $t0, $t1
-	mtc0 $t0, $12
-	
-	# now enable interrupts on the KBD
-	lw $t0, RCR
-	li $t1, 0x00000002
-	sw $t1, 0($t0)
-	jr $ra
+.kdata
+interrupt_counter: .word 0
 	
 	
 # interrupt handler
@@ -78,15 +56,23 @@ int_enable:
 	
 	bnez $t1, non_int
 	
-	andi $t2, $k0, 0x00000100
-	bnez $t2, tick
+	andi $t2, $k0, 0x00000400
+	bnez $t2, counter_interrupt
 	b iend
 	
-tick:
-	lw $s1, RCR
-	lw $t1, 0($s1)
-	beqz $t1, iend
+counter_interrupt:
+
+	la $t0, interrupt_counter
+	lw $t1, 0($t0)
+	addi $t1, $t1, 1
+	sw $t1, 0($t0)
 	
+	li $t2, 4
+	bne $t1, $t2, iend
+	
+	sw $zero, 0($t0)
+	
+tick:
 	# switching logic
 	lw $t1, running
 	lw $t2, ready

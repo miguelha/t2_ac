@@ -1,8 +1,17 @@
 #this is the entry point of the program
 	.data
-PCB: .space 1440 # 36*4 bytes per PCB for 10 PCBs
+PCB: .space 1560 # 36*4 bytes per PCB for 10 PCBs
 freepcb: .word 0
 running: .word 0
+readyHi: .word 0
+readyLo: .word 0
+lastreadyHi: .word 0
+lastreadyLo: .word 0
+waiting: .word 0
+idle: .word 0
+
+counter_interrupt_addr: .word 0xFFFF0013
+
 ready: .word 0
 lastready: .word 0
 
@@ -11,6 +20,9 @@ freestack: .word 0
 	
 STRING_done: .asciiz "Multitask started\n"
 STRING_main: .asciiz "\nTask Zero"
+	
+.eqv INCR_PCB 156
+.eqv INCR_SP 32
 
 .eqv AT 0
 .eqv V0 4
@@ -47,7 +59,10 @@ STRING_main: .asciiz "\nTask Zero"
 .eqv LO 128
 .eqv EPC 132
 .eqv PID 136
-.eqv NEXT 140
+.eqv TICKS_TO_SWITCH 140
+.eqv PRIORITY 144
+.eqv TICKS_TO_WAIT 148
+.eqv NEXT 152
 
 	.text
 main:
@@ -96,8 +111,8 @@ prep_multi:
 	sw $zero, PID($t1)
 	sw $zero, NEXT($t1)
 	
-	addiu $t1, $t1, 144 # increment 1 position in PCB and stack
-	addiu $t2, $t2, 32
+	addiu $t1, $t1, INCR_PCB # increment 1 position in PCB and stack
+	addiu $t2, $t2, INCR_SP
 	sw $t1, freepcb # store new freepcb and freestack addresses
 	sw $t2, freestack
 	
@@ -110,6 +125,8 @@ newtask:
 	sw $t2, SP($t1) # set new task PCB stack pointer, EPC, PID and next PCB
 	sw $a0, EPC($t1) 
 	sw $a1, PID($t1)
+	li $t3, 3
+	sw $t3, TICKS_TO_SWITCH($t1)
 	sw $zero, NEXT($t1)
 	
 	lw $t3, ready # load ready list and check if its the first task
@@ -125,8 +142,8 @@ firsttask:
 	sw $t1, lastready
 	
 newtaskend:
-	addiu $t1, $t1, 144 # increment 1 position in PCB and stack
-	addiu $t2, $t2, 32
+	addiu $t1, $t1, INCR_PCB # increment 1 position in PCB and stack
+	addiu $t2, $t2, INCR_SP
 	sw $t1, freepcb # store new freepcb and freestack addresses
 	sw $t2, freestack
 
@@ -134,9 +151,10 @@ newtaskend:
     
     
 start_multi:
-	move $s0, $ra # enable interrupts, ensuring that $ra isn't lost in nested subroutine calls
-	jal int_enable
-	move $ra, $s0
+	li $t0, 1
+	la $t1, counter_interrupt_addr # enable digital lab sim counter interrupts (30/inst)
+	lw $t1, 0($t1)
+	sb $t0, 0($t1)
 	jr $ra 
 
 	.globl main
